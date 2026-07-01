@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6fa;
+  --surface: #ffffff;
+  --surface-border: #e2e8f0;
+  --foreground: #0f172a;
+  --foreground-muted: #55617a;
+  --foreground-subtle: #8592a8;
+
+  --accent-newcastle: #2563eb;
+  --accent-gateshead: #059669;
+  --accent-sunderland: #d97706;
+  --accent-durham: #7c3aed;
+  --accent-southtyneside: #db2777;
+  --accent-northtyneside: #0891b2;
+  --accent-northumberland: #ea580c;
+
+  --positive: #16a34a;
+  --negative: #dc2626;
+  --focus-ring: #2563eb;
+}
+
+.dark {
+  --background: #0b1120;
+  --surface: #111b2e;
+  --surface-border: #1e2d45;
+  --foreground: #edf2f7;
+  --foreground-muted: #a3b3c9;
+  --foreground-subtle: #6b7c93;
+
+  --accent-newcastle: #3b82f6;
+  --accent-gateshead: #10b981;
+  --accent-sunderland: #f59e0b;
+  --accent-durham: #8b5cf6;
+  --accent-southtyneside: #ec4899;
+  --accent-northtyneside: #06b6d4;
+  --accent-northumberland: #f97316;
+
+  --positive: #22c55e;
+  --negative: #ef4444;
+  --focus-ring: #60a5fa;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-border: var(--surface-border);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--surface-border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Respect reduced-motion preference across the app (charts, transitions). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
