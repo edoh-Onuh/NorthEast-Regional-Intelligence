@@ -77,10 +77,14 @@ export interface Checkpoint {
 
 /** Latest ingestion run per (domain, source) — powers the Data Provenance panel. */
 export async function getCheckpoints(): Promise<Checkpoint[]> {
+  // NB: the aggregate is aliased "max_finished_at" (not "finished_at") on
+  // purpose — the outer join also exposes ingestion_runs.finished_at, and an
+  // identical alias makes the join/order-by reference ambiguous to Postgres
+  // (error 42702), which previously threw and took down the whole dashboard.
   const latestPerSource = db
     .select({
       source: ingestionRuns.source,
-      finishedAt: max(ingestionRuns.finishedAt).as("finished_at"),
+      maxFinishedAt: max(ingestionRuns.finishedAt).as("max_finished_at"),
     })
     .from(ingestionRuns)
     .groupBy(ingestionRuns.source)
@@ -100,7 +104,7 @@ export async function getCheckpoints(): Promise<Checkpoint[]> {
       latestPerSource,
       and(
         eq(ingestionRuns.source, latestPerSource.source),
-        eq(ingestionRuns.finishedAt, latestPerSource.finishedAt)
+        eq(ingestionRuns.finishedAt, latestPerSource.maxFinishedAt)
       )
     )
     .orderBy(desc(ingestionRuns.finishedAt));
