@@ -29,6 +29,7 @@ export const businessCountsFetcher: DataSourceFetcher = {
       date,
       industry: "37748736", // Total, all industries
       legal_status: "0", // Total
+      employment_sizeband: "0", // Total (otherwise NOMIS returns one row per sizeband)
       measures: "20100",
     });
 

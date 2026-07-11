@@ -8,6 +8,34 @@ const SOURCE_URL =
 
 const CSV_URL = `https://fingertips.phe.org.uk/api/all_data/csv/by_indicator_id?indicator_ids=${INDICATOR_ID}&area_type_id=${AREA_TYPE_ID}`;
 
+/**
+ * Splits raw CSV text into logical rows, honouring quoted fields that span
+ * multiple physical lines (some Fingertips "Category Type" values, e.g. the
+ * LSOA21 deprivation-deciles label, contain a literal embedded newline —
+ * a naive `text.split("\n")` would tear that row's fields out of alignment).
+ */
+export function splitCsvRows(text: string): string[] {
+  const rows: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      current += char;
+    } else if (char === "\r" && !inQuotes) {
+      // skip; \n (bare or from \r\n) ends the row below
+    } else if (char === "\n" && !inQuotes) {
+      if (current.length > 0) rows.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  if (current.length > 0) rows.push(current);
+  return rows;
+}
+
 /** Splits one CSV line into fields, honouring double-quoted values containing commas. */
 export function parseCsvLine(line: string): string[] {
   const fields: string[] = [];
@@ -76,15 +104,16 @@ export const healthFetcher: DataSourceFetcher = {
     const text = await res.text();
     const laCodes = new Set(NORTH_EAST_LAS.map((la) => la.code));
 
-    const lines = text.split("\n");
-    if (lines.length === 0) {
+    const rows = splitCsvRows(text);
+    if (rows.length === 0) {
       return { source: "OHID Fingertips", sourceUrl: SOURCE_URL, domain: "health", observations: [] };
     }
 
-    const header = parseCsvLine(lines[0]);
+    const header = parseCsvLine(rows[0]);
     const idx = {
       areaCode: header.indexOf("Area Code"),
       sex: header.indexOf("Sex"),
+      categoryType: header.indexOf("Category Type"),
       period: header.indexOf("Time period"),
       value: header.indexOf("Value"),
     };
@@ -94,13 +123,17 @@ export const healthFetcher: DataSourceFetcher = {
 
     const observations: RawObservation[] = [];
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line || ![...laCodes].some((code) => line.includes(code))) continue;
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || ![...laCodes].some((code) => row.includes(code))) continue;
 
-      const fields = parseCsvLine(line);
+      const fields = parseCsvLine(row);
       const areaCode = fields[idx.areaCode];
       if (!laCodes.has(areaCode)) continue;
+
+      // Skip sub-area breakdowns (e.g. deprivation deciles) — we only want
+      // the whole-local-authority figure, which has no category set.
+      if (fields[idx.categoryType]) continue;
 
       const sex = fields[idx.sex];
       const metric = sex === "Male" ? "life_expectancy_male" : sex === "Female" ? "life_expectancy_female" : null;

@@ -56,7 +56,19 @@ export async function runIngestion(
     const startedAt = new Date();
     try {
       const result = await fetcher.fetch();
-      const rows = result.observations.map((o) => ({
+
+      // Some upstream sources (e.g. NOMIS) occasionally publish the same
+      // LA/domain/metric/period twice in one response; de-dupe so a single
+      // multi-row upsert never targets the same conflict key twice (which
+      // Postgres rejects with "ON CONFLICT DO UPDATE command cannot affect
+      // row a second time").
+      const dedupedObservations = [
+        ...new Map(
+          result.observations.map((o) => [`${o.laCode}|${o.domain}|${o.metric}|${o.period}`, o])
+        ).values(),
+      ];
+
+      const rows = dedupedObservations.map((o) => ({
         laCode: o.laCode,
         domain: o.domain,
         metric: o.metric,
@@ -95,10 +107,10 @@ export async function runIngestion(
       // A fetcher can populate more than one domain (e.g. the APS source
       // covers both "labour" and "skills" metrics); log one checkpoint per
       // domain actually written so the provenance panel reflects reality.
-      const domainsWritten = new Set(result.observations.map((o) => o.domain));
+      const domainsWritten = new Set(dedupedObservations.map((o) => o.domain));
       if (domainsWritten.size === 0) domainsWritten.add(fetcher.domain);
       const rowsByDomain = new Map<string, number>();
-      for (const o of result.observations) {
+      for (const o of dedupedObservations) {
         rowsByDomain.set(o.domain, (rowsByDomain.get(o.domain) ?? 0) + 1);
       }
       for (const domain of domainsWritten) {

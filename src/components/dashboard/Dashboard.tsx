@@ -19,10 +19,16 @@ export function Dashboard({ observations, checkpoints }: Props) {
   const activeDomain = DOMAINS.find((d) => d.key === active) ?? DOMAINS[0];
 
   return (
-    <div id="main-content" className="flex min-h-full flex-1 flex-col">
+    <div className="flex min-h-full flex-1 flex-col">
       <Header />
       <TabNav domains={DOMAINS} active={active} onChange={setActive} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-4 sm:px-6 sm:py-6">
+      <main
+        id="main-content"
+        role="tabpanel"
+        aria-labelledby={`tab-${activeDomain.key}`}
+        tabIndex={0}
+        className="mx-auto w-full max-w-6xl flex-1 px-3 py-4 focus:outline-none sm:px-6 sm:py-6"
+      >
         <DomainView
           domain={activeDomain}
           metrics={metricsForDomain(activeDomain.key)}
