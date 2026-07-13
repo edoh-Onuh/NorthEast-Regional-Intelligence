@@ -10,7 +10,7 @@ worked through in full rather than assumed.
 | Header | Value | Why |
 |---|---|---|
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Forces HTTPS for 2 years; Vercel terminates TLS in front of this anyway, this is defense-in-depth against downgrade/misconfiguration. |
-| `Content-Security-Policy` | `default-src 'self'; script-src 'self'` (+ `'unsafe-eval' 'unsafe-inline'` in dev only) `; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests` | Blocks loading of any third-party script/object; blocks framing (clickjacking). `style-src 'unsafe-inline'` is required because Recharts and several components render inline `style` attributes for SVG positioning — see the "CSP trade-off" note below. |
+| `Content-Security-Policy` | `default-src 'self'; script-src 'self' 'unsafe-inline'` (+ `'unsafe-eval'` in dev only) `; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests` | Blocks loading of any third-party script/object (only same-origin `src` scripts run); blocks framing (clickjacking). Both `script-src` and `style-src` need `'unsafe-inline'` — see the "CSP trade-off" note below. |
 | `X-Frame-Options` | `DENY` | Belt-and-braces alongside `frame-ancestors 'none'` for older browsers that don't parse CSP. |
 | `X-Content-Type-Options` | `nosniff` | Stops MIME-sniffing attacks. |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Avoids leaking full URLs (which never contain secrets here, but this is standard hygiene). |
@@ -23,9 +23,22 @@ threaded through rendering. This app is deliberately built around **scheduled in
 cached reads** for performance and resilience against upstream (NOMIS/ONS/Land
 Registry/Fingertips) outages or rate limits — forcing full dynamic SSR on every request
 would defeat that. The non-nonce CSP (Next's own documented fallback pattern) was used
-instead, with `script-src` kept to `'self'` with no `unsafe-inline`/`unsafe-eval` in
-production (only `style-src` needs `'unsafe-inline'`, and only because of inline SVG/DOM
-styling from the charting library).
+instead. With that pattern `script-src` must include `'unsafe-inline'` in production:
+the App Router emits inline hydration/flight-data scripts (`self.__next_f.push(…)`) and
+`next-themes` emits an inline anti-flash script, and with no nonce (would force dynamic
+rendering) and no viable hash (the flight-data payload changes with the data),
+`'unsafe-inline'` is what permits Next's own bootstrap — without it the browser blocks
+those scripts and the page never hydrates (tabs, theme toggle and the provenance panel
+go dead). `style-src` needs `'unsafe-inline'` likewise, because of inline SVG/DOM styling
+from the charting library. `'unsafe-eval'` is dev-only (React Fast Refresh).
+
+**Residual risk of `script-src 'unsafe-inline'`:** it weakens the XSS defence that a
+nonce/hash CSP would give, since an injected inline `<script>` would execute. In practice
+the exposure here is low: the app renders only trusted UK-government open data and static
+copy (no user-generated content), the one hand-authored inline block is JSON-LD emitted
+as inert `application/ld+json` with `<` escaped, and third-party/cross-origin scripts are
+still blocked (only same-origin `src=` scripts load). If the app ever renders user input,
+switch the home page to dynamic rendering and adopt a per-request nonce.
 
 ## 2. Authentication on the one privileged endpoint (`/api/ingest`)
 
