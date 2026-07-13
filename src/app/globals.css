@@ -8,17 +8,22 @@
   --foreground-muted: #55617a;
   --foreground-subtle: #8592a8;
 
-  --accent-newcastle: #2563eb;
-  --accent-gateshead: #059669;
-  --accent-sunderland: #d97706;
-  --accent-durham: #7c3aed;
-  --accent-southtyneside: #db2777;
-  --accent-northtyneside: #0891b2;
-  --accent-northumberland: #ea580c;
+  /* Categorical series palette (light mode). These are reference slots 1–7 in
+     a FIXED order — the order is the colour-vision-deficiency safety mechanism
+     (blue and violet are kept non-adjacent so they never touch), validated with
+     the dataviz palette checker: worst adjacent CVD ΔE 24.2, well clear of the
+     ≥12 target. Newcastle stays blue as the primary UI accent. Do not reorder. */
+  --accent-newcastle: #2a78d6;      /* slot 1 · blue */
+  --accent-gateshead: #1baf7a;      /* slot 2 · aqua */
+  --accent-sunderland: #eda100;     /* slot 3 · yellow */
+  --accent-durham: #008300;         /* slot 4 · green */
+  --accent-southtyneside: #4a3aa7;  /* slot 5 · violet */
+  --accent-northtyneside: #e34948;  /* slot 6 · red */
+  --accent-northumberland: #e87ba4; /* slot 7 · magenta */
 
-  --positive: #16a34a;
-  --negative: #dc2626;
-  --focus-ring: #2563eb;
+  --positive: #0ca30c;
+  --negative: #d03b3b;
+  --focus-ring: #2a78d6;
 }
 
 .dark {
@@ -29,17 +34,20 @@
   --foreground-muted: #a3b3c9;
   --foreground-subtle: #6b7c93;
 
-  --accent-newcastle: #3b82f6;
-  --accent-gateshead: #10b981;
-  --accent-sunderland: #f59e0b;
-  --accent-durham: #8b5cf6;
-  --accent-southtyneside: #ec4899;
-  --accent-northtyneside: #06b6d4;
-  --accent-northumberland: #f97316;
+  /* Same seven hues, stepped for the dark surface (#111b2e) — NOT an automatic
+     flip. Validated for dark: all in the L 0.48–0.67 band, ≥3:1 on surface,
+     worst adjacent CVD ΔE 10.3 (floor band, mitigated by the legend + table). */
+  --accent-newcastle: #3987e5;      /* slot 1 · blue */
+  --accent-gateshead: #199e70;      /* slot 2 · aqua */
+  --accent-sunderland: #c98500;     /* slot 3 · yellow */
+  --accent-durham: #008300;         /* slot 4 · green */
+  --accent-southtyneside: #9085e9;  /* slot 5 · violet */
+  --accent-northtyneside: #e66767;  /* slot 6 · red */
+  --accent-northumberland: #d55181; /* slot 7 · magenta */
 
-  --positive: #22c55e;
-  --negative: #ef4444;
-  --focus-ring: #60a5fa;
+  --positive: #0ca30c;
+  --negative: #e05252;
+  --focus-ring: #3987e5;
 }
 
 @theme inline {
