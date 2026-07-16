@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recentMonths, recentQuarterLabels, recentYears } from "./dateRanges";
+import { recentDecembers, recentMonths, recentQuarterLabels, recentYears } from "./dateRanges";
 
 describe("recentMonths", () => {
   it("returns the requested count, ascending, YYYY-MM format", () => {
@@ -29,5 +29,16 @@ describe("recentYears", () => {
     const currentYear = new Date().getUTCFullYear();
     expect(years[years.length - 1]).toBe(String(currentYear - 1));
     expect(years).toEqual([...years].sort());
+  });
+});
+
+describe("recentDecembers", () => {
+  it("returns ascending YYYY-12 labels ending `lagYears` before now", () => {
+    const decembers = recentDecembers(6, 1);
+    expect(decembers).toHaveLength(6);
+    expect(decembers.every((d) => /^\d{4}-12$/.test(d))).toBe(true);
+    const currentYear = new Date().getUTCFullYear();
+    expect(decembers[decembers.length - 1]).toBe(`${currentYear - 1}-12`);
+    expect(decembers).toEqual([...decembers].sort());
   });
 });

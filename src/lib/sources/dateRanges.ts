@@ -50,3 +50,18 @@ export function recentYears(years: number, lagYears = 1): string[] {
   for (let i = 0; i < years; i++) out.push(String(currentYear - lagYears - i));
   return out.reverse();
 }
+
+/**
+ * "YYYY-12" labels for the last `years` calendar years, ending `lagYears`
+ * before now. The Annual Population Survey *qualifications* variables in
+ * NM_17_5 (NVQ4+, no qualifications) are published as an annual Jan–Dec series
+ * labelled by December — unlike the rolling-quarter employment variables,
+ * they return no data for arbitrary quarter labels, so they must be queried at
+ * these December period labels.
+ */
+export function recentDecembers(years: number, lagYears = 1): string[] {
+  const currentYear = new Date().getUTCFullYear();
+  const out: string[] = [];
+  for (let i = 0; i < years; i++) out.push(`${currentYear - lagYears - i}-12`);
+  return out.reverse();
+}
