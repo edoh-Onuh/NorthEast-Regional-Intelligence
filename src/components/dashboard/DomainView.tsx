@@ -3,6 +3,7 @@ import type { DomainMeta, MetricMeta } from "@/lib/catalog";
 import type { ObservationRow } from "@/lib/db/queries";
 import { MetricCard } from "./MetricCard";
 import { StatCard } from "./StatCard";
+import { PeriodBadge } from "./PeriodBadge";
 import { laShortName } from "@/lib/geographies";
 import { formatValue } from "@/lib/format";
 
@@ -37,7 +38,10 @@ function GvaPerCapitaCard({ observations }: { observations: ObservationRow[] }) 
 
   return (
     <section className="rounded-2xl border border-surface-border bg-surface p-4 sm:p-5">
-      <h3 className="text-sm font-semibold text-foreground">GVA per Capita ({latestPeriod})</h3>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold text-foreground">GVA per Capita</h3>
+        <PeriodBadge period={latestPeriod} />
+      </div>
       <p className="mt-0.5 mb-3 text-xs text-foreground-muted">
         Derived from GVA (economy) and mid-year population estimates (population) — real figures from two
         independent ONS/NOMIS sources, combined at render time rather than stored.

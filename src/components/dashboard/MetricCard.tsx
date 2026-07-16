@@ -1,9 +1,10 @@
 import type { MetricMeta } from "@/lib/catalog";
 import type { SeriesPoint } from "@/lib/db/queries";
 import { laShortName } from "@/lib/geographies";
-import { formatPeriod, formatValue } from "@/lib/format";
+import { formatValue } from "@/lib/format";
 import { latestPerLA, summarizeMetric } from "@/lib/seriesUtils";
 import { StatCard } from "./StatCard";
+import { PeriodBadge } from "./PeriodBadge";
 import { TimeSeriesChart } from "./charts/TimeSeriesChart";
 import { ComparisonBarChart } from "./charts/ComparisonBarChart";
 import { AccessibleDataTable } from "./AccessibleDataTable";
@@ -29,12 +30,7 @@ export function MetricCard({ metric, points }: Props) {
           </h3>
           <p className="mt-0.5 text-xs text-foreground-muted">{metric.description}</p>
         </div>
-        {summary.latestPeriod && (
-          <span className="whitespace-nowrap rounded-full bg-background px-2.5 py-1 text-[11px] font-medium text-foreground-subtle">
-            {isSnapshot ? "Latest: " : "Through "}
-            {formatPeriod(summary.latestPeriod)}
-          </span>
-        )}
+        {summary.latestPeriod && <PeriodBadge period={summary.latestPeriod} />}
       </div>
 
       {summary.min && summary.max && (
